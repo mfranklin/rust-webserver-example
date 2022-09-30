@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Child Page</title>
+    <link rel="stylesheet" href="../css/index.css"/>
+</head>
+<body>
+<div class="centered-container">
+    <div class="row"><h1>More involved page</h1></div>
+    <div class="row" >
+        <button id="show-image">Show Image</button>
+        <button id="show-data">Show Data</button>
+        <button onclick="window.location = '/'">Back</button>
+    </div>
+    <div class="row">
+        <img id="main-image" src="../img/img_1.png" alt="BIG SKY" style="display: none"/>
+        <div id="loading" style="display: none">Loading Data...</div>
+        <div id="data-display" style="display: none">
+            <form id="form">
+                <label for="year">Input a year to see the temp anomaly</label>
+                <input type="text" pattern="\d{4}" id="year"/>
+                <button id="show-temp">Show Temp</button>
+            </form>
+            <p style="font-size:38px;font-weight: bold;" id="year-display">
+
+            </p>
+        </div>
+    </div>
+</div>
+<script>
+    const showImageButton = document.getElementById("show-image");
+    const showDataButton = document.getElementById("show-data");
+    const showTempButton = document.getElementById("show-temp");
+    const img = document.getElementById("main-image");
+    const dataDisplay = document.getElementById("data-display");
+    const yearInput = document.getElementById("year");
+    const yearDisplay = document.getElementById("year-display");
+
+    let temps = null;
+
+    showDataButton.onclick = (evt) => {
+        evt.preventDefault();
+        if (showDataButton.innerText === "Show Data") {
+            showDataButton.innerText = "Hide Data";
+            dataDisplay.style.display = 'block';
+        } else {
+            showDataButton.innerText = "Show Data";
+            dataDisplay.style.display = 'none';
+        }
+        if (temps === null) {
+            document.getElementById("loading").style.display = 'block';
+            document.getElementById("data-display").style.display = 'none';
+            getData().then((d) => {
+                temps = d;
+                console.log(temps);
+                document.getElementById("loading").style.display = 'none';
+                document.getElementById("data-display").style.display = 'block';
+            }).catch(err => {
+                document.getElementById("loading").style.display = 'none';
+                document.getElementById("data-display").style.display = 'block';
+                dataDisplay.innerText = "Error: " + err;
+            });
+        }
+    }
+
+    showImageButton.onclick = (evt) => {
+        evt.preventDefault();
+        if (showImageButton.innerText === "Show Image") {
+            showImageButton.innerText = "Hide Image";
+            img.style.display = 'block';
+        } else {
+            showImageButton.innerText = "Show Image";
+            img.style.display = 'none';
+        }
+    }
+
+    showTempButton.onclick = (evt) => {
+        evt.preventDefault();
+        if (yearInput.checkValidity()) {
+            yearDisplay.innerText = "Temperature deviation from mean: " + temps.data[yearInput.value];
+        } else {
+            yearDisplay.innerText = "Enter a valid date between 1880 and 2021";
+        }
+    }
+
+    document.getElementById("form").onsubmit = handleSubmit;
+
+    async function getData() {
+        const data = await fetch("/data/all_data.json");
+        return await data.json();
+    }
+
+    function handleSubmit(evt) {
+        evt.preventDefault();
+    }
+</script>
+</body>
+</html>
